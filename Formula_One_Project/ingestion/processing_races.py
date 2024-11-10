@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ####Load Data####
 
@@ -6,7 +14,8 @@
 
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, DoubleType
 
-data_path = "/Volumes/demo_catalog/default/formula_one_files"
+data_path = raw_folder_path
+processed_data_path = processed_folder_path
 
 race_schema = StructType([StructField("raceId", IntegerType(), True),
                         StructField("year", IntegerType(), True), 
@@ -36,12 +45,11 @@ from pyspark.sql.functions import col, current_timestamp, to_timestamp, lit, con
 races_selected = race_df.select(col("raceId"), col("year"), col("round"), col("circuitId"), col("name"), col("date"), col("time"))
 
 races_cols_added = races_selected.withColumn("race_timestamp", to_timestamp(concat(col("date"),lit(" "),col("time")), "yyyy-MM-dd HH:mm:ss")) \
-    .withColumn("ingestion_date", current_timestamp()) \
     .withColumnRenamed("raceId", "race_id") \
     .withColumnRenamed("year", "race_year") \
     .withColumnRenamed("circuitId", "circuit_id")
 
-races_final_df = races_cols_added.drop("date", "time")
+races_final_df = add_ingestion_date(races_cols_added).drop("date", "time")
 #races_final_df.printSchema()
 
 #display(races_final_df)
@@ -56,4 +64,4 @@ races_final_df = races_cols_added.drop("date", "time")
 
 # COMMAND ----------
 
-races_final_df.write.mode("overwrite").partitionBy("race_year").parquet(f"{data_path}/races_final")
+races_final_df.write.mode("overwrite").partitionBy("race_year").parquet(f"{processed_data_path}/races_final")

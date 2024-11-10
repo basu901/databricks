@@ -1,10 +1,19 @@
 # Databricks notebook source
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/common_functions"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ####Read Data####
 
 # COMMAND ----------
 
-data_path = "/Volumes/demo_catalog/default/formula_one_files"
+data_path = raw_folder_path
+processed_data_path = processed_folder_path
 
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType
 
@@ -55,6 +64,6 @@ qualifying_final = qualifying_date.withColumnRenamed("driverId", "driver_id") \
 
 # COMMAND ----------
 
-qualifying_final.write.mode("overwrite").parquet(f"{data_path}/qualifying")
+qualifying_final.write.mode("overwrite").parquet(f"{processed_data_path}/qualifying")
 
 #display(spark.read.parquet(f"{data_path}/qualifying"))

@@ -1,4 +1,12 @@
 # Databricks notebook source
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
+
+# COMMAND ----------
+
+# MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/common_functions"
+
+# COMMAND ----------
+
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType
 
 # COMMAND ----------
@@ -9,8 +17,8 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 
 # COMMAND ----------
 
-data_path = "/Volumes/demo_catalog/default/formula_one_files"
-
+data_path = raw_folder_path
+processed_data_path = processed_folder_path
 #Infer Schema is a costly operation, as the whole dataset needs to be scanned
 #Perform only during development or a small dataset
 
@@ -86,7 +94,7 @@ from pyspark.sql.functions import current_timestamp, lit
 
 # COMMAND ----------
 
-circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current_timestamp())
+circuits_final_df = add_ingestion_date(circuits_df_col_renamed)
 
 #Need to define literals under "lit"
 """circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current_timestamp()) \
@@ -102,4 +110,4 @@ circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current
 
 # COMMAND ----------
 
-circuits_final_df.write.mode("overwrite").parquet(f"{data_path}/circuits")
+circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")

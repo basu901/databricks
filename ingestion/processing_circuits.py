@@ -3,6 +3,12 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC
+# MAGIC ####Read Data####
+
+# COMMAND ----------
+
 data_path = "/Volumes/demo_catalog/default/formula_one_files"
 
 #Infer Schema is a costly operation, as the whole dataset needs to be scanned
@@ -31,16 +37,12 @@ circuit_df= spark.read \
 
 # COMMAND ----------
 
-circuit_df.printSchema()
+#circuit_df.printSchema()
 
 # COMMAND ----------
 
 #Another way to get an idea of the data types of the dataset
-circuit_df.describe().show()
-
-# COMMAND ----------
-
-display(circuit_df)
+#circuit_df.describe().show()
 
 # COMMAND ----------
 
@@ -54,7 +56,7 @@ circuits_df_selected = circuit_df.select(col("circuitId"),
                                          col("lat"),
                                          col("lng"),
                                          col("alt"))
-circuits_df_selected.show()
+#circuits_df_selected.show()
 
 # COMMAND ----------
 
@@ -70,7 +72,13 @@ circuits_df_col_renamed = circuits_df_selected.withColumnRenamed("circuitId", "c
     .withColumnRenamed("lng","longitude") \
     .withColumnRenamed("alt","altitude")
 
-display(circuits_df_col_renamed)
+#display(circuits_df_col_renamed)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC ####Rename and Filter Data####
 
 # COMMAND ----------
 
@@ -84,7 +92,7 @@ circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current
 """circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current_timestamp()) \
     .withColumn("Environment",lit("Production"))"""
 
-display(circuits_final_df) 
+#display(circuits_final_df) 
 
 # COMMAND ----------
 
@@ -94,4 +102,4 @@ display(circuits_final_df)
 
 # COMMAND ----------
 
-
+circuits_final_df.write.mode("overwrite").parquet(f"{data_path}/circuits")

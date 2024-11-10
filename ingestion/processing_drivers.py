@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC ####Read Data####
+
+# COMMAND ----------
+
 from pyspark.sql.types import StructType, StructField, DateType, StringType, IntegerType, ArrayType
 
 data_path = "/Volumes/demo_catalog/default/formula_one_files"
@@ -21,7 +26,7 @@ drivers_df = spark.read \
   .schema(drivers_schema) \
   .json(f"{data_path}/drivers.json")
 
-display(drivers_df)
+#display(drivers_df)
 
 # COMMAND ----------
 
@@ -39,7 +44,7 @@ drivers_name_combined = drivers_df.withColumn("name", concat(col("name.forename"
 
 drivers_final = drivers_name_combined.withColumn("date",current_timestamp())
 
-display(drivers_final)
+#display(drivers_final)
 
 # COMMAND ----------
 

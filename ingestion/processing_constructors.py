@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC ####Read Data####
+
+# COMMAND ----------
+
 from pyspark.sql.types import StructType,StructField,IntegerType,StringType
 
 data_path = "/Volumes/demo_catalog/default/formula_one_files"
@@ -16,7 +21,7 @@ constructors_df = spark.read \
                   .json(f"{data_path}/constructors.json")
 
 
-constructors_df.show(10)
+#constructors_df.show(10)
 
 # COMMAND ----------
 
@@ -42,7 +47,7 @@ constructors_final_df = constructors_df_with_date.withColumnRenamed("constructor
                                            .withColumnRenamed("constructorRef","constructor_ref") \
                                           .drop("url")
 
-display(constructors_final_df)
+#display(constructors_final_df)
 
 # COMMAND ----------
 

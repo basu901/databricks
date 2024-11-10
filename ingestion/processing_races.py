@@ -21,7 +21,7 @@ race_df = spark.read.option("header", "true") \
     .schema(race_schema) \
     .csv(f"{data_path}/races.csv")
 
-display(race_df)
+#display(race_df)
 
 # COMMAND ----------
 
@@ -57,7 +57,3 @@ races_final_df = races_cols_added.drop("date", "time")
 # COMMAND ----------
 
 races_final_df.write.mode("overwrite").partitionBy("race_year").parquet(f"{data_path}/races_final")
-
-# COMMAND ----------
-
-display(spark.read.parquet(f"{data_path}/races_final"))

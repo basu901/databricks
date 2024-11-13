@@ -1,4 +1,8 @@
 # Databricks notebook source
+dbutils.widgets.text("p_data_source","")
+
+# COMMAND ----------
+
 # MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
 
 # COMMAND ----------
@@ -15,6 +19,7 @@
 
 data_path = raw_folder_path
 processed_data_path = processed_folder_path
+v_data_source = dbutils.widgets.get("p_data_source")
 
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType, DoubleType
 
@@ -41,12 +46,13 @@ pitstops_df = spark.read \
 
 # COMMAND ----------
 
-from pyspark.sql.functions import current_timestamp
+from pyspark.sql.functions import current_timestamp, lit
 
 pitstops_date = pitstops_df.withColumn("date", current_timestamp())
 
 pitstops_final = pitstops_date.withColumnRenamed("driverId", "driver_id") \
-  .withColumnRenamed("raceId", "race_id")
+  .withColumnRenamed("raceId", "race_id") \
+  .withColumn("data_source", lit(v_data_source))
 
 #display(pitstops_final)#
 
@@ -61,3 +67,7 @@ pitstops_final = pitstops_date.withColumnRenamed("driverId", "driver_id") \
 pitstops_final.write.mode("overwrite").parquet(f"{processed_data_path}/pit_stops")
 
 #display(spark.read.parquet(f"{data_path}/pit_stops"))
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

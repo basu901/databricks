@@ -1,4 +1,8 @@
 # Databricks notebook source
+dbutils.widgets.text("p_data_source","")
+
+# COMMAND ----------
+
 # MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
 
 # COMMAND ----------
@@ -19,6 +23,8 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType, 
 
 data_path = raw_folder_path
 processed_data_path = processed_folder_path
+v_data_source = dbutils.widgets.get("p_data_source")
+
 #Infer Schema is a costly operation, as the whole dataset needs to be scanned
 #Perform only during development or a small dataset
 
@@ -94,7 +100,8 @@ from pyspark.sql.functions import current_timestamp, lit
 
 # COMMAND ----------
 
-circuits_final_df = add_ingestion_date(circuits_df_col_renamed)
+circuits_final_df = add_ingestion_date(circuits_df_col_renamed) \
+    .withColumn("data_source", lit(v_data_source))
 
 #Need to define literals under "lit"
 """circuits_final_df = circuits_df_col_renamed.withColumn("ingestion_date", current_timestamp()) \
@@ -111,3 +118,7 @@ circuits_final_df = add_ingestion_date(circuits_df_col_renamed)
 # COMMAND ----------
 
 circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

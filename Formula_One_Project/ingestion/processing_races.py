@@ -1,4 +1,9 @@
 # Databricks notebook source
+dbutils.widgets.text("p_data_source","")
+v_data_source = dbutils.widgets.get("p_data_source")
+
+# COMMAND ----------
+
 # MAGIC %run "/Workspace/Users/shaunak.basu@perficient.com/formula_one_project/Formula_One_Project/includes/configuration"
 
 # COMMAND ----------
@@ -47,7 +52,8 @@ races_selected = race_df.select(col("raceId"), col("year"), col("round"), col("c
 races_cols_added = races_selected.withColumn("race_timestamp", to_timestamp(concat(col("date"),lit(" "),col("time")), "yyyy-MM-dd HH:mm:ss")) \
     .withColumnRenamed("raceId", "race_id") \
     .withColumnRenamed("year", "race_year") \
-    .withColumnRenamed("circuitId", "circuit_id")
+    .withColumnRenamed("circuitId", "circuit_id") \
+    .withColumn("data_source", lit(v_data_source))
 
 races_final_df = add_ingestion_date(races_cols_added).drop("date", "time")
 #races_final_df.printSchema()
@@ -65,3 +71,7 @@ races_final_df = add_ingestion_date(races_cols_added).drop("date", "time")
 # COMMAND ----------
 
 races_final_df.write.mode("overwrite").partitionBy("race_year").parquet(f"{processed_data_path}/races_final")
+
+# COMMAND ----------
+
+dbutils.notebook.exit("Success")

@@ -25,24 +25,38 @@ drivers_df = spark.read.parquet(f"{processed_folder_path}/drivers")
 
 # COMMAND ----------
 
-circuits_races_joined = circuits_df.join(races_df.withColumnRenamed("name","race_name") \
-  .withColumnRenamed("race_timestamp","race_date"), "circuit_id").withColumnRenamed("location","circuit_location") 
-display(circuits_races_joined)
+#Renaming circuits columns
+circuits_df = circuits_df.withColumnRenamed("location","circuit_location")
+
+#Renaming races column
+races_df = races_df.withColumnRenamed("year","race_year") \
+  .withColumnRenamed("name","race_name") \
+  .withColumnRenamed("race_timestamp","race_date")
+
+#Renaming drivers column
+drivers_df = drivers_df.withColumnRenamed("name","driver_name") \
+  .withColumnRenamed("number","driver_number") \
+  .withColumnRenamed("nationality","driver_nationality")
+
+#Renaming results columns
+results_df = results_df.withColumnRenamed("time","race_time")
+
+#Renaming constructors columns
+constructors_df = constructors_df.withColumnRenamed("name","team")
+
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ####Join drivers and constructors and results####
+# MAGIC ####Join (drivers, constructors, results) and (circuits, races)####
 
 # COMMAND ----------
 
-drivers_results_joined = drivers_df.join(results_df.withColumnRenamed("time","race_time"), "driver_id") \
-  .withColumnRenamed("name","driver_name") \
-  .withColumnRenamed("number","driver_number") \
-  .withColumnRenamed("nationality","driver_nationality")
 
-constructors_driver_results = constructors_df.join(drivers_results_joined, "constructor_id").withColumnRenamed("name","team")
-display(constructors_driver_results)
+
+drivers_results_constructors = drivers_df.join(results_df, "driver_id").join(constructors_df, "constructor_id")
+
+races_circuits = races_df.join(circuits_df, "circuit_id")
 
 # COMMAND ----------
 
@@ -53,19 +67,23 @@ display(constructors_driver_results)
 
 from pyspark.sql.functions import current_timestamp
 
-combined_df = circuits_races_joined.join(constructors_driver_results, "race_id")
+combined_df = drivers_results_constructors.join(races_circuits, "race_id")
 
-final_df = combined_df.select(circuits_races_joined.race_year, \
-  circuits_races_joined.race_name, \
-  circuits_races_joined.race_date, \
-  circuits_df.name, \
-  drivers_results_joined.driver_name, \
-  drivers_df.number.alias("driver_number"), \
-  drivers_results_joined.driver_nationality, \
-  constructors_driver_results.team, \
-  combined_df.grid, \
-  combined_df.fastest_lap, \
-  combined_df.race_time, \
-  combined_df.points).withColumn("created_date",current_timestamp())
+final_df = combined_df.select("race_year", "race_name", "race_date", \
+  "circuit_location", \
+  "driver_name", "driver_number", "driver_nationality", \
+  "team", \
+  "grid", "fastest_lap", "race_time", "points", "position") \
+  .withColumn("created_date",current_timestamp())
 
 display(final_df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC ####Write Results to file####
+
+# COMMAND ----------
+
+final_df.write.mode("overwrite").parquet(f"{presentation_folder_path}/races_results")
